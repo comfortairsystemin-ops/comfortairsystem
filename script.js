@@ -1,140 +1,83 @@
-// script.js
+/* style.css */
 
-const canvas = document.getElementById('particle-canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let particlesArray;
-
-class Particle {
-    constructor(x, y, directionX, directionY, size, color) {
-        this.x = x;
-        this.y = y;
-        this.directionX = directionX;
-        this.directionY = directionY;
-        this.size = size;
-        this.color = color;
-    }
-    draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-    }
-    update() {
-        if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
-        if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
-        this.x += this.directionX;
-        this.y += this.directionY;
-        this.draw();
-    }
+body {
+    font-family: 'Montserrat', sans-serif;
+    overflow-x: hidden;
 }
-
-function initParticles() {
-    particlesArray = [];
-    let numberOfParticles = (canvas.height * canvas.width) / 9000;
-    for (let i = 0; i < numberOfParticles; i++) {
-        let size = (Math.random() * 1.5) + 0.5;
-        let x = Math.random() * (innerWidth - size * 2) + size * 2;
-        let y = Math.random() * (innerHeight - size * 2) + size * 2;
-        let directionX = (Math.random() * .4) - .2;
-        let directionY = (Math.random() * .4) - .2;
-        let color = 'rgba(255, 255, 255, 0.15)';
-        particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
-    }
+.premium-black-bg {
+    background: #0a0a0a;
+    position: relative;
 }
-
-function animateParticles() {
-    requestAnimationFrame(animateParticles);
-    ctx.clearRect(0, 0, innerWidth, innerHeight);
-    particlesArray.forEach(p => p.update());
+.content-overlay {
+    position: relative;
+    z-index: 10;
 }
-
-initParticles();
-animateParticles();
-
-window.addEventListener('resize', () => {
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-    initParticles();
-});
-
-const daysEl = document.getElementById('days');
-const hoursEl = document.getElementById('hours');
-const minutesEl = document.getElementById('minutes');
-const secondsEl = document.getElementById('seconds');
-let countdownInterval;
-
-function getLaunchDate() {
-    const storedDate = localStorage.getItem('launchDate');
-    if (storedDate && new Date(storedDate) > new Date()) return new Date(storedDate);
-    const newDate = new Date();
-    const randomDays = Math.floor(Math.random() * 8) + 7;
-    newDate.setDate(newDate.getDate() + randomDays);
-    localStorage.setItem('launchDate', newDate.toISOString());
-    return newDate;
+#particle-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
 }
-
-function startCountdown() {
-    const launchDate = getLaunchDate();
-    if (countdownInterval) clearInterval(countdownInterval);
-
-    countdownInterval = setInterval(() => {
-        const now = new Date().getTime();
-        const distance = launchDate.getTime() - now;
-        if (distance < 0) {
-            clearInterval(countdownInterval);
-            localStorage.removeItem('launchDate');
-            startCountdown();
-            return;
-        }
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        daysEl.innerText = String(days).padStart(2, '0');
-        hoursEl.innerText = String(hours).padStart(2, '0');
-        minutesEl.innerText = String(minutes).padStart(2, '0');
-        secondsEl.innerText = String(seconds).padStart(2, '0');
-    }, 1000);
+.logo-container {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 2s ease-in-out;
 }
-
-startCountdown();
-
-const getInTouchTrigger = document.getElementById('get-in-touch-trigger');
-const contactDetails = document.getElementById('contact-details');
-const emailLink = document.getElementById('contact-email');
-const phoneLink = document.getElementById('contact-phone');
-let swapInterval = null;
-
-function setSwapValues() {
-    if (!emailLink || !phoneLink || !contactDetails) return;
-    if (window.innerWidth < 768) {
-        contactDetails.style.setProperty('--email-translate-x', '0px');
-        contactDetails.style.setProperty('--phone-translate-x', '0px');
-        return;
-    }
-    const emailWidth = emailLink.offsetWidth;
-    const phoneWidth = phoneLink.offsetWidth;
-    const gap = 32;
-    contactDetails.style.setProperty('--email-translate-x', `${phoneWidth + gap}px`);
-    contactDetails.style.setProperty('--phone-translate-x', `-${emailWidth + gap}px`);
+.countdown-box {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-
-window.addEventListener('load', setSwapValues);
-window.addEventListener('resize', setSwapValues);
-
-getInTouchTrigger.addEventListener('mouseenter', () => {
-    if (swapInterval) clearInterval(swapInterval);
-    if (window.innerWidth < 768) return;
-    swapInterval = setInterval(() => {
-        contactDetails.classList.toggle('swapped');
-    }, 1200);
-});
-
-getInTouchTrigger.addEventListener('mouseleave', () => {
-    if (swapInterval) clearInterval(swapInterval);
-    swapInterval = null;
-});
+.countdown-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+.animate-fade-in-up {
+    animation: fadeInUp 1.5s ease-in-out forwards;
+    opacity: 0;
+}
+.animate-fade-in {
+    animation: fadeIn 2s ease-in-out forwards;
+    opacity: 0;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes pulse {
+    0%, 100% { stroke: rgba(255, 255, 255, 0.2); transform: scale(1); }
+    50% { stroke: rgba(147, 197, 253, 0.6); transform: scale(1.02); }
+}
+.logo-pulse {
+    animation: pulse 4s ease-in-out infinite;
+    transform-origin: center;
+}
+#get-in-touch-trigger {
+    cursor: pointer;
+}
+#contact-email, #contact-phone {
+    transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+#contact-details.swapped #contact-email {
+    transform: translateX(var(--email-translate-x, 0px));
+}
+#contact-details.swapped #contact-phone {
+    transform: translateX(var(--phone-translate-x, 0px));
+}
+.delay-1 { animation-delay: 0.2s; }
+.delay-2 { animation-delay: 0.4s; }
+.delay-3 { animation-delay: 0.6s; }
+.delay-4 { animation-delay: 0.8s; }
+.delay-5 { animation-delay: 1s; }
+.delay-6 { animation-delay: 1.2s; }
+.delay-7 { animation-delay: 1.4s; }
